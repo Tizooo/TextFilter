@@ -1,0 +1,13 @@
+# set to "blocked-words: []" to disable.
+blocked-words:
+  - 'badword'
+  - 'fuck*'
+
+# URL of the raw file on GitHub where the list is stored.
+# set to "github: []" to disable.
+github:
+  - 'https://raw.githubusercontent.com/Tizooo/Textfilter/main/badwords'
+
+# Discord webhook.
+# set to '' to disable.
+webhook-url: 'https://discord.com/api/webhooks/1161980501872082996/c-LG_y0YkR8kGcveZeZ8Yk4y-2S7uqDK-cR_A75p1tkrG23D5n5Go8YIShSbw2lAYpZn'

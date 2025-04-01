@@ -1,0 +1,10 @@
+name: Textfilter
+version: '1.0.0'
+main: me.tizo.textfilter.Textfilter
+api-version: '1.21'
+commands:
+  textfilter:
+    description: Reload the textfilter configuration
+    usage: /textfilter reload
+    permission: textfilter.reload
+    permission-message: You don't have permission to execute this command.
