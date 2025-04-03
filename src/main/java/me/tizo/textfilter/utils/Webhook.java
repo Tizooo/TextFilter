@@ -2,6 +2,7 @@ package me.tizo.textfilter.utils;
 
 import lombok.Setter;
 import me.tizo.textfilter.TextFilter;
+import me.tizo.textfilter.listener.EventListener;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -15,7 +16,7 @@ public class Webhook {
     @Setter
     private static String webhookUrl;
 
-    public static void sendAlert(Player player, String message, String triggeredFilter) {
+    public static void sendAlert(Player player, String message, String triggeredFilter, EventListener.EventType eventType) {
         if (webhookUrl == null || webhookUrl.isEmpty()) {
             return; // Don't attempt to send if no webhook is set
         }
@@ -31,7 +32,7 @@ public class Webhook {
                 String jsonPayload = "{" +
                         "\"username\": \"TextFilter\"," +
                         "\"embeds\": [{" +
-                        "\"title\": \"Filtered Message Alert\"," +
+                        "\"title\": \"Filtered " + eventType + " Alert\"," +
                         "\"color\": 15158332," +
                         "\"fields\": [" +
                         "{\"name\": \"Player\", \"value\": \"`" + player.getName() + "`\", \"inline\": true}," +

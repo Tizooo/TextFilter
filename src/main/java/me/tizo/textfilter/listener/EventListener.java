@@ -21,6 +21,7 @@ import java.util.regex.Pattern;
 
 public class EventListener implements Listener {
     private final Config config;
+    public enum EventType {CHAT, COMMAND, BOOK, BOOK_TITLE, SIGN, ANVIL};
     private final PlainTextComponentSerializer serializer = PlainTextComponentSerializer.plainText();
 
     public EventListener(Config config) {
@@ -29,7 +30,7 @@ public class EventListener implements Listener {
 
     @EventHandler
     public void onPlayerChat(AsyncChatEvent event) {
-        if (containsBlockedWords(serializer.serialize(event.message()), event.getPlayer())) {
+        if (containsBlockedWords(serializer.serialize(event.message()), event.getPlayer(), EventType.CHAT)) {
             event.setCancelled(true);
             event.getPlayer().sendMessage(Component.text("Your message contains blocked words!", NamedTextColor.RED));
         }
@@ -37,7 +38,7 @@ public class EventListener implements Listener {
 
     @EventHandler
     public void onCommandPreprocess(PlayerCommandPreprocessEvent event) {
-        if (containsBlockedWords(event.getMessage(), event.getPlayer())) {
+        if (containsBlockedWords(event.getMessage(), event.getPlayer(), EventType.COMMAND)) {
             event.setCancelled(true);
             event.getPlayer().sendMessage(Component.text("Your message contains blocked words!", NamedTextColor.RED));
         }
@@ -50,7 +51,7 @@ public class EventListener implements Listener {
         List<Component> pages = newBookMeta.pages();
 
         // Check title
-        if (title != null && containsBlockedWords(title, event.getPlayer())) {
+        if (title != null && containsBlockedWords(title, event.getPlayer(), EventType.BOOK_TITLE)) {
             event.setCancelled(true);
             event.getPlayer().sendMessage(Component.text("Your book title contains blocked words!", NamedTextColor.RED));
             return;
@@ -63,7 +64,7 @@ public class EventListener implements Listener {
         }
 
         // Check the entire book content
-        if (containsBlockedWords(combinedText.toString(), event.getPlayer())) {
+        if (containsBlockedWords(combinedText.toString(), event.getPlayer(), EventType.BOOK)) {
             event.setCancelled(true);
             event.getPlayer().sendMessage(Component.text("Your book contains blocked words!", NamedTextColor.RED));
         }
@@ -80,7 +81,7 @@ public class EventListener implements Listener {
 
         String allLines = combinedLines.toString().toLowerCase().trim();
 
-        if (containsBlockedWords(allLines, event.getPlayer())) {
+        if (containsBlockedWords(allLines, event.getPlayer(), EventType.SIGN)) {
             event.setCancelled(true);
             event.getPlayer().sendMessage(Component.text("Your sign contains blocked words!", NamedTextColor.RED));
         }
@@ -93,16 +94,16 @@ public class EventListener implements Listener {
         AnvilView anvilView = event.getView(); // Directly cast
 
         String renameText = anvilView.getRenameText();
-        if (renameText != null && containsBlockedWords(renameText, (Player) anvilView.getPlayer())) {
+        if (renameText != null && containsBlockedWords(renameText, (Player) anvilView.getPlayer(), EventType.ANVIL)) {
             event.setResult(null);
             anvilView.getPlayer().sendMessage(Component.text("The chosen name contains blocked words!", NamedTextColor.RED));
         }
     }
 
-    private boolean containsBlockedWords(String text, Player player) {
+    private boolean containsBlockedWords(String text, Player player, EventType eventType) {
         for (Pattern pattern : config.getBlockedPatterns()) {
             if (pattern.matcher(text).find()) {
-                Webhook.sendAlert(player, text, pattern.pattern());
+                Webhook.sendAlert(player, text, pattern.pattern(), eventType);
                 return true;
             }
         }
