@@ -1,7 +1,7 @@
 package me.tizo.textfilter.utils;
 
 import lombok.Setter;
-import me.tizo.textfilter.Textfilter;
+import me.tizo.textfilter.TextFilter;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -20,7 +20,7 @@ public class Webhook {
             return; // Don't attempt to send if no webhook is set
         }
 
-        Bukkit.getScheduler().runTaskAsynchronously(Textfilter.getPlugin(Textfilter.class), () -> {
+        Bukkit.getScheduler().runTaskAsynchronously(TextFilter.getPlugin(TextFilter.class), () -> {
             try {
                 URL url = new URI(webhookUrl).toURL();
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();

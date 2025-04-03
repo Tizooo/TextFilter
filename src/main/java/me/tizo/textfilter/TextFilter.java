@@ -5,7 +5,7 @@ import me.tizo.textfilter.config.Config;
 import me.tizo.textfilter.listener.EventListener;
 import org.bukkit.plugin.java.JavaPlugin;
 
-public final class Textfilter extends JavaPlugin {
+public final class TextFilter extends JavaPlugin {
 
     private Config config;
 

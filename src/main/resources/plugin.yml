@@ -1,6 +1,6 @@
-name: Textfilter
+name: TextFilter
 version: '1.0.0'
-main: me.tizo.textfilter.Textfilter
+main: me.tizo.textfilter.TextFilter
 api-version: '1.21'
 commands:
   textfilter:
