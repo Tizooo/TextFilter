@@ -1,29 +1,28 @@
 package me.tizo.textfilter.utils;
 
+import lombok.Setter;
+import me.tizo.textfilter.Textfilter;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
 public class Webhook {
-    private final String webhookUrl;
+    @Setter
+    private static String webhookUrl;
 
-    public Webhook(String webhookUrl) {
-        this.webhookUrl = (webhookUrl == null || webhookUrl.isEmpty()) ? null : webhookUrl;
-    }
-
-    public void sendAlert(Player player, String message, String triggeredFilter) {
+    public static void sendAlert(Player player, String message, String triggeredFilter) {
         if (webhookUrl == null || webhookUrl.isEmpty()) {
             return; // Don't attempt to send if no webhook is set
         }
 
-        Bukkit.getScheduler().runTaskAsynchronously(Bukkit.getPluginManager().getPlugin("Textfilter"), () -> {
+        Bukkit.getScheduler().runTaskAsynchronously(Textfilter.getPlugin(Textfilter.class), () -> {
             try {
-                URL url = new URL(webhookUrl);
+                URL url = new URI(webhookUrl).toURL();
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                 connection.setRequestMethod("POST");
                 connection.setRequestProperty("Content-Type", "application/json");
@@ -36,7 +35,7 @@ public class Webhook {
                         "\"color\": 15158332," +
                         "\"fields\": [" +
                         "{\"name\": \"Player\", \"value\": \"`" + player.getName() + "`\", \"inline\": true}," +
-                        "{\"name\": \"Message\", \"value\": \"`" + ChatColor.stripColor(message) + "`\", \"inline\": false}," +
+                        "{\"name\": \"Message\", \"value\": \"`" + message + "`\", \"inline\": false}," +
                         "{\"name\": \"Triggered Filter\", \"value\": \"`" + triggeredFilter + "`\", \"inline\": true}" +
                         "]}]" +
                         "}";

@@ -6,7 +6,7 @@ blocked-words:
 # URL of the raw file on GitHub where the list is stored.
 # set to "github: []" to disable.
 github:
-  - 'https://raw.githubusercontent.com/Tizooo/Textfilter/main/badwords'
+  - 'https://raw.githubusercontent.com/Tizooo/Regex-filter/main/badwords'
 
 # Discord webhook.
 # set to '' to disable.

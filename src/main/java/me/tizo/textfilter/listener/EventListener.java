@@ -1,6 +1,7 @@
 package me.tizo.textfilter.listener;
 
 import io.papermc.paper.event.player.AsyncChatEvent;
+import me.tizo.textfilter.config.Config;
 import me.tizo.textfilter.utils.Webhook;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -16,24 +17,19 @@ import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.view.AnvilView;
 
 import java.util.List;
-import java.util.Set;
-import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 public class EventListener implements Listener {
-    private final Logger logger;
-    private final Set<Pattern> blockedPatterns;
-    private final String webhookUrl;
+    private final Config config;
+    private final PlainTextComponentSerializer serializer = PlainTextComponentSerializer.plainText();
 
-    public EventListener(Logger logger, Set<Pattern> blockedPatterns, String webhookUrl) {
-        this.logger = logger;
-        this.blockedPatterns = blockedPatterns;
-        this.webhookUrl = webhookUrl;
+    public EventListener(Config config) {
+        this.config = config;
     }
 
     @EventHandler
     public void onPlayerChat(AsyncChatEvent event) {
-        if (containsBlockedWords(PlainTextComponentSerializer.plainText().serialize(event.message()), event.getPlayer())) {
+        if (containsBlockedWords(serializer.serialize(event.message()), event.getPlayer())) {
             event.setCancelled(true);
             event.getPlayer().sendMessage(Component.text("Your message contains blocked words!", NamedTextColor.RED));
         }
@@ -52,7 +48,6 @@ public class EventListener implements Listener {
         BookMeta newBookMeta = event.getNewBookMeta();
         String title = newBookMeta.getTitle();
         List<Component> pages = newBookMeta.pages();
-        PlainTextComponentSerializer serializer = PlainTextComponentSerializer.plainText();
 
         // Check title
         if (title != null && containsBlockedWords(title, event.getPlayer())) {
@@ -77,7 +72,6 @@ public class EventListener implements Listener {
     @EventHandler
     public void onSignChange(SignChangeEvent event) {
         StringBuilder combinedLines = new StringBuilder();
-        PlainTextComponentSerializer serializer = PlainTextComponentSerializer.plainText();
 
         for (Component line : event.lines()) {
             String plainText = serializer.serialize(line);
@@ -93,6 +87,7 @@ public class EventListener implements Listener {
     }
 
     // TODO: only check if the player is about to take the renamed item, this way its not checked everytime the player adds or removed letters while renaming.
+    // TODO: use inventory click event and check in which inventory it was performed.
     @EventHandler
     public void onPrepareAnvil(PrepareAnvilEvent event) {
         AnvilView anvilView = event.getView(); // Directly cast
@@ -105,13 +100,9 @@ public class EventListener implements Listener {
     }
 
     private boolean containsBlockedWords(String text, Player player) {
-        for (Pattern pattern : blockedPatterns) {
+        for (Pattern pattern : config.getBlockedPatterns()) {
             if (pattern.matcher(text).find()) {
-
-                if (webhookUrl != null && !webhookUrl.isEmpty()) {
-                    new Webhook(webhookUrl).sendAlert(player, text, pattern.pattern());
-                }
-
+                Webhook.sendAlert(player, text, pattern.pattern());
                 return true;
             }
         }
