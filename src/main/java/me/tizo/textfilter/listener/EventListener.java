@@ -21,7 +21,7 @@ import java.util.regex.Pattern;
 
 public class EventListener implements Listener {
     private final Config config;
-    public enum EventType {CHAT, COMMAND, BOOK, BOOK_TITLE, SIGN, ANVIL};
+    public enum EventType {CHAT, COMMAND, BOOK, BOOK_TITLE, SIGN, ANVIL}
     private final PlainTextComponentSerializer serializer = PlainTextComponentSerializer.plainText();
 
     public EventListener(Config config) {
@@ -44,6 +44,7 @@ public class EventListener implements Listener {
         }
     }
 
+    // TODO: do not append space at the end
     @EventHandler
     public void onPlayerEditBook(PlayerEditBookEvent event) {
         BookMeta newBookMeta = event.getNewBookMeta();
@@ -70,6 +71,7 @@ public class EventListener implements Listener {
         }
     }
 
+    // TODO: do not append space at the end
     @EventHandler
     public void onSignChange(SignChangeEvent event) {
         StringBuilder combinedLines = new StringBuilder();
@@ -91,9 +93,9 @@ public class EventListener implements Listener {
     // TODO: use inventory click event and check in which inventory it was performed.
     @EventHandler
     public void onPrepareAnvil(PrepareAnvilEvent event) {
-        AnvilView anvilView = event.getView(); // Directly cast
-
+        AnvilView anvilView = event.getView();
         String renameText = anvilView.getRenameText();
+
         if (renameText != null && containsBlockedWords(renameText, (Player) anvilView.getPlayer(), EventType.ANVIL)) {
             event.setResult(null);
             anvilView.getPlayer().sendMessage(Component.text("The chosen name contains blocked words!", NamedTextColor.RED));
