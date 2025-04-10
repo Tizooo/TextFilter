@@ -16,7 +16,7 @@ public class Webhook {
     @Setter
     private static String webhookUrl;
 
-    public static void sendAlert(Player player, String message, String triggeredFilter, EventListener.EventType eventType) {
+    public static void sendAlert(Player player, String message, String normalizedText, String triggeredFilter, EventListener.EventType eventType) {
         if (webhookUrl == null || webhookUrl.isEmpty()) {
             return; // Don't attempt to send if no webhook is set
         }
@@ -29,6 +29,11 @@ public class Webhook {
                 connection.setRequestProperty("Content-Type", "application/json");
                 connection.setDoOutput(true);
 
+                // Escape the message and normalized text for safe JSON formatting
+                String escapedMessage = escapeJson(message);
+                String escapedNormalizedText = escapeJson(normalizedText);
+                String escapedTriggeredFilter = escapeJson(triggeredFilter);
+
                 String jsonPayload = "{" +
                         "\"username\": \"TextFilter\"," +
                         "\"embeds\": [{" +
@@ -36,8 +41,8 @@ public class Webhook {
                         "\"color\": 15158332," +
                         "\"fields\": [" +
                         "{\"name\": \"Player\", \"value\": \"`" + player.getName() + "`\", \"inline\": true}," +
-                        "{\"name\": \"Message\", \"value\": \"`" + message + "`\", \"inline\": false}," +
-                        "{\"name\": \"Triggered Filter\", \"value\": \"`" + triggeredFilter + "`\", \"inline\": true}" +
+                        "{\"name\": \"Message\", \"value\": \"`" + escapedMessage + " -> " + escapedNormalizedText + "`\", \"inline\": false}," +
+                        "{\"name\": \"Triggered Filter\", \"value\": \"`" + escapedTriggeredFilter + "`\", \"inline\": true}" +
                         "]}]" +
                         "}";
 
@@ -54,5 +59,19 @@ public class Webhook {
                 Bukkit.getLogger().warning("Error sending webhook: " + e.getMessage());
             }
         });
+    }
+
+    // Helper method to escape special characters for JSON
+    private static String escapeJson(String input) {
+        if (input == null) return "";
+
+        // Escape backslashes, quotes, and control characters
+        return input.replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("\n", "\\n")
+                .replace("\r", "\\r")
+                .replace("\t", "\\t")
+                .replace("\b", "\\b")
+                .replace("\f", "\\f");
     }
 }

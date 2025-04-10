@@ -1,12 +1,10 @@
-# set to "blocked-words: []" to disable.
-blocked-words:
-  - 'badword'
-  - 'fuck*'
-
 # URL of the raw file on GitHub where the list is stored.
-# set to "github: []" to disable.
-github:
+# set to "badwords-github: []" to disable.
+badwords-github:
   - 'https://raw.githubusercontent.com/Tizooo/Regex-filter/main/badwords'
+
+leet-patterns-github:
+  - 'https://raw.githubusercontent.com/Tizooo/Regex-filter/main/leet_map.txt'
 
 # Discord webhook.
 # set to '' to disable.

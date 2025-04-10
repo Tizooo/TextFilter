@@ -2,6 +2,7 @@ package me.tizo.textfilter.listener;
 
 import io.papermc.paper.event.player.AsyncChatEvent;
 import me.tizo.textfilter.config.Config;
+import me.tizo.textfilter.modules.LeetNormalizer;
 import me.tizo.textfilter.utils.Webhook;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -16,7 +17,10 @@ import org.bukkit.event.player.PlayerEditBookEvent;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.view.AnvilView;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 public class EventListener implements Listener {
@@ -103,13 +107,56 @@ public class EventListener implements Listener {
     }
 
     private boolean containsBlockedWords(String text, Player player, EventType eventType) {
-        for (Pattern pattern : config.getBlockedPatterns()) {
-            if (pattern.matcher(text).find()) {
-                Webhook.sendAlert(player, text, pattern.pattern(), eventType);
-                return true;
+        Set<String> normalizedVariants = LeetNormalizer.normalizeSentence(text.toLowerCase());
+
+        for (String normalized : normalizedVariants) {
+            for (Pattern pattern : config.getBlockedPatterns()) {
+                if (pattern.matcher(normalized).find()) {
+                    Webhook.sendAlert(player, text, normalized, pattern.pattern(), eventType);
+                    return true;
+                }
             }
         }
         return false;
+    }
+
+    public List<String> normalizeLeetSpeak(String input, Map<String, List<String>> leetMap) {
+        List<String> results = new ArrayList<>();
+        input = input.toLowerCase();
+
+        // Sort patterns longest to shortest
+        List<String> patterns = new ArrayList<>(leetMap.keySet());
+        patterns.sort((a, b) -> Integer.compare(b.length(), a.length()));
+
+        // Start recursive parsing
+        backtrack(input, 0, "", leetMap, patterns, results);
+        return results;
+    }
+
+    private void backtrack(String input, int index, String current, Map<String, List<String>> leetMap, List<String> patterns, List<String> results) {
+        if (index >= input.length()) {
+            results.add(current);
+            return;
+        }
+
+        boolean matched = false;
+
+        for (String pattern : patterns) {
+            if (index + pattern.length() <= input.length()) {
+                String segment = input.substring(index, index + pattern.length());
+                if (leetMap.containsKey(segment)) {
+                    matched = true;
+                    for (String letter : leetMap.get(segment)) {
+                        backtrack(input, index + pattern.length(), current + letter, leetMap, patterns, results);
+                    }
+                }
+            }
+        }
+
+        // If no leet match, keep original character
+        if (!matched) {
+            backtrack(input, index + 1, current + input.charAt(index), leetMap, patterns, results);
+        }
     }
 }
 

@@ -10,9 +10,7 @@ import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Pattern;
 
 @Getter
@@ -21,6 +19,7 @@ public class Config {
     private FileConfiguration config;
     private final Set<Pattern> blockedPatterns = new HashSet<>();
     private String webhookUrl;
+    private final Map<String, List<String>> leetMap = new HashMap<>();
 
     public Config(Plugin plugin) {
         this.plugin = plugin;
@@ -37,14 +36,10 @@ public class Config {
     private void loadConfig() {
         plugin.reloadConfig();
         this.config = plugin.getConfig();
-        blockedPatterns.clear();
-
-        config.getStringList("blocked-words").forEach(word ->
-                blockedPatterns.add(Pattern.compile(word, Pattern.CASE_INSENSITIVE))
-        );
 
         // Fetch and add blocked words from GitHub repositories
-        List<String> githubRepos = config.getStringList("github");
+        blockedPatterns.clear();
+        List<String> githubRepos = config.getStringList("badwords-github");
         githubRepos.forEach(repoUrl -> {
             try {
                 Set<String> wordsFromRepo = fetchWordsFromGitHub(repoUrl);
@@ -58,6 +53,18 @@ public class Config {
 
         webhookUrl = config.getString("webhook-url", "");
         Webhook.setWebhookUrl(webhookUrl);
+
+        leetMap.clear();
+        List<String> leetMapUrls = config.getStringList("leet-patterns-github");
+
+        leetMapUrls.forEach(url -> {
+            try {
+                Map<String, List<String>> fetchedMap = fetchLeetMapFromGitHub(url);
+                leetMap.putAll(fetchedMap);
+            } catch (Exception e) {
+                plugin.getLogger().warning("Failed to fetch leet map from GitHub: " + url);
+            }
+        });
     }
 
     // Method to fetch words from a GitHub raw URL
@@ -82,5 +89,34 @@ public class Config {
             }
         }
         return words;
+    }
+
+    public Map<String, List<String>> fetchLeetMapFromGitHub(String repoUrl) throws Exception {
+        Map<String, List<String>> map = new HashMap<>();
+
+        URI uri = new URI(repoUrl);
+        URL url = uri.toURL();
+
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                line = line.trim();
+                if (line.isEmpty() || line.startsWith("#")) continue;
+
+                String[] parts = line.split("=", 2);
+                if (parts.length != 2) continue;
+
+                String letter = parts[0].trim().toLowerCase();
+                String[] leetVariants = parts[1].split(",");
+
+                for (String variant : leetVariants) {
+                    variant = variant.trim().toLowerCase();
+                    if (!variant.isEmpty()) {
+                        map.computeIfAbsent(variant, k -> new ArrayList<>()).add(letter);
+                    }
+                }
+            }
+        }
+        return map;
     }
 }
