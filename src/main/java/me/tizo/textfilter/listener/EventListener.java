@@ -3,6 +3,7 @@ package me.tizo.textfilter.listener;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import me.tizo.textfilter.config.Config;
 import me.tizo.textfilter.modules.LeetNormalizer;
+import me.tizo.textfilter.modules.badwords.Flow;
 import me.tizo.textfilter.utils.Webhook;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -34,6 +35,11 @@ public class EventListener implements Listener {
 
     @EventHandler
     public void onPlayerChat(AsyncChatEvent event) {
+
+        String originalMessage = PlainTextComponentSerializer.plainText().serialize(event.message());
+        String normalizedMessage = Flow.badwords(originalMessage);
+        event.getPlayer().sendMessage(Component.text("Normalized message: " + normalizedMessage));
+
         if (containsBlockedWords(serializer.serialize(event.message()), event.getPlayer(), EventType.CHAT)) {
             event.setCancelled(true);
             event.getPlayer().sendMessage(Component.text("Your message contains blocked words!", NamedTextColor.RED));
@@ -107,7 +113,11 @@ public class EventListener implements Listener {
     }
 
     private boolean containsBlockedWords(String text, Player player, EventType eventType) {
-        Set<String> normalizedVariants = LeetNormalizer.normalizeSentence(text.toLowerCase());
+        // Create an instance of LeetNormalizer using the config
+        // TODO: only create it once, otherwise it could be shit performance
+        LeetNormalizer leetNormalizer = new LeetNormalizer(config);
+
+        Set<String> normalizedVariants = leetNormalizer.normalizeSentence(text.toLowerCase());
 
         for (String normalized : normalizedVariants) {
             for (Pattern pattern : config.getBlockedPatterns()) {
@@ -118,45 +128,6 @@ public class EventListener implements Listener {
             }
         }
         return false;
-    }
-
-    public List<String> normalizeLeetSpeak(String input, Map<String, List<String>> leetMap) {
-        List<String> results = new ArrayList<>();
-        input = input.toLowerCase();
-
-        // Sort patterns longest to shortest
-        List<String> patterns = new ArrayList<>(leetMap.keySet());
-        patterns.sort((a, b) -> Integer.compare(b.length(), a.length()));
-
-        // Start recursive parsing
-        backtrack(input, 0, "", leetMap, patterns, results);
-        return results;
-    }
-
-    private void backtrack(String input, int index, String current, Map<String, List<String>> leetMap, List<String> patterns, List<String> results) {
-        if (index >= input.length()) {
-            results.add(current);
-            return;
-        }
-
-        boolean matched = false;
-
-        for (String pattern : patterns) {
-            if (index + pattern.length() <= input.length()) {
-                String segment = input.substring(index, index + pattern.length());
-                if (leetMap.containsKey(segment)) {
-                    matched = true;
-                    for (String letter : leetMap.get(segment)) {
-                        backtrack(input, index + pattern.length(), current + letter, leetMap, patterns, results);
-                    }
-                }
-            }
-        }
-
-        // If no leet match, keep original character
-        if (!matched) {
-            backtrack(input, index + 1, current + input.charAt(index), leetMap, patterns, results);
-        }
     }
 }
 
