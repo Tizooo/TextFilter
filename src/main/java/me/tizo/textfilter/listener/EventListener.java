@@ -35,11 +35,6 @@ public class EventListener implements Listener {
 
     @EventHandler
     public void onPlayerChat(AsyncChatEvent event) {
-
-        String originalMessage = PlainTextComponentSerializer.plainText().serialize(event.message());
-        String normalizedMessage = Flow.badwords(originalMessage);
-        event.getPlayer().sendMessage(Component.text("Normalized message: " + normalizedMessage));
-
         if (containsBlockedWords(serializer.serialize(event.message()), event.getPlayer(), EventType.CHAT)) {
             event.setCancelled(true);
             event.getPlayer().sendMessage(Component.text("Your message contains blocked words!", NamedTextColor.RED));
