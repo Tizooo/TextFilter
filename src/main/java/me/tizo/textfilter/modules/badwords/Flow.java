@@ -2,7 +2,7 @@ package me.tizo.textfilter.modules.badwords;
 
 public class Flow {
 
-    public static String badwords (String text) {
+    public static Boolean badwords (String text) {
 
         String normalized = NormalizeText.normalize(text);
 
@@ -10,7 +10,7 @@ public class Flow {
 
         System.out.println("output: " + normalized + " | contains bad words: " + hasBadWords);
 
-        return normalized;
+        return hasBadWords;
 
     }
 }

@@ -25,13 +25,39 @@ public class ExpandedRegexCheck {
                 while ((line = reader.readLine()) != null) {
                     line = line.trim();
                     if (line.isEmpty() || line.startsWith("#")) continue;
-                    regexPatterns.add(Pattern.compile(line, Pattern.CASE_INSENSITIVE));
+
+                    System.out.println("Original regex: " + line);
+
+                    String expandedRegex = expandRegex(line);
+
+                    System.out.println("Expanded regex: " + expandedRegex);
+
+                    regexPatterns.add(Pattern.compile(expandedRegex, Pattern.CASE_INSENSITIVE));
                 }
 
             }
         } catch (Exception e) {
             System.err.println("Failed to load regex patterns: " + e.getMessage());
         }
+    }
+
+    private static String expandRegex(String input) {
+        StringBuilder result = new StringBuilder();
+
+        for (char ch : input.toCharArray()) {
+            switch (ch) {
+                case 'i': case 'l':
+                    result.append("[il1!|]+");
+                    break;
+                case 'c':
+                    result.append("[c<({\\[]+");
+                    break;
+                default:
+                    result.append(ch);
+            }
+        }
+
+        return result.toString();
     }
 
     public static boolean regexCheck(String text) {

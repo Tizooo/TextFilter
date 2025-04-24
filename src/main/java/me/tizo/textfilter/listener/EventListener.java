@@ -35,9 +35,10 @@ public class EventListener implements Listener {
 
     @EventHandler
     public void onPlayerChat(AsyncChatEvent event) {
-        if (containsBlockedWords(serializer.serialize(event.message()), event.getPlayer(), EventType.CHAT)) {
+        if (Flow.badwords(serializer.serialize(event.message()))) {
             event.setCancelled(true);
             event.getPlayer().sendMessage(Component.text("Your message contains blocked words!", NamedTextColor.RED));
+            Webhook.sendAlert(event.getPlayer(), serializer.serialize(event.message()), EventType.CHAT);
         }
     }
 
@@ -117,7 +118,7 @@ public class EventListener implements Listener {
         for (String normalized : normalizedVariants) {
             for (Pattern pattern : config.getBlockedPatterns()) {
                 if (pattern.matcher(normalized).find()) {
-                    Webhook.sendAlert(player, text, normalized, pattern.pattern(), eventType);
+                    Webhook.sendAlert(player, text, eventType);
                     return true;
                 }
             }
