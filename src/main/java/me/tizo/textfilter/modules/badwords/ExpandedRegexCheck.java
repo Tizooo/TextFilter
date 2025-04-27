@@ -44,20 +44,38 @@ public class ExpandedRegexCheck {
     private static String expandRegex(String input) {
         StringBuilder result = new StringBuilder();
 
-        for (char ch : input.toCharArray()) {
-            switch (ch) {
-                case 'i': case 'l':
-                    result.append("[il1!|]+");
-                    break;
-                case 'c':
-                    result.append("[c<({\\[]+");
-                    break;
-                default:
-                    result.append(ch);
+        for (int i = 0; i < input.length(); i++) {
+            char ch = input.charAt(i);
+
+            // Handle escape sequences like \b, \s
+            if (ch == '\\' && i + 1 < input.length()) {
+                result.append(ch).append(input.charAt(i + 1));
+                i++; // Skip next char
+                continue;
+            }
+
+            // Expand specific letters to characters that look like them
+            if (ch == 'i' || ch == 'l') {
+                result.append("[il1!|\\W\\s]");
+            } else if (ch == 'c') {
+                result.append("[c<({\\[\\W\\s]");
+            } else {
+                result.append(ch);
+            }
+
+            // After expanded char, if not regex operator, add +(\W|\s)*
+            if (!isRegexOperator(ch)) {
+                result.append('+');
+                result.append("(\\W|\\s)*");
             }
         }
 
         return result.toString();
+    }
+
+    //TODO: instead just check if its a letter or not
+    private static boolean isRegexOperator(char ch) {
+        return ch == '^' || ch == '+' || ch == '*' || ch == '|' || ch == '?' || ch == ')' || ch == '(' || ch == '[' || ch == ']';
     }
 
     public static boolean regexCheck(String text) {

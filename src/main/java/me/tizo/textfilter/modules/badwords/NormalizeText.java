@@ -19,6 +19,7 @@ public class NormalizeText {
         obviousLeetMap.put('h', Arrays.asList("|-|"));
         obviousLeetMap.put('j', Arrays.asList("_|"));
         obviousLeetMap.put('k', Arrays.asList("|<"));
+        obviousLeetMap.put('l', Arrays.asList("|_"));
         obviousLeetMap.put('m', Arrays.asList("|\\/|", "/V\\"));
         obviousLeetMap.put('n', Arrays.asList("|\\|", "/V", "ท", "И"));
         obviousLeetMap.put('o', Arrays.asList("0", "Ø"));
