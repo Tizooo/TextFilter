@@ -8,8 +8,6 @@ public class Flow {
 
         Boolean hasBadWords = ExpandedRegexCheck.regexCheck(normalized);
 
-        System.out.println("output: " + normalized + " | contains bad words: " + hasBadWords);
-
         return hasBadWords;
 
     }

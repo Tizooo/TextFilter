@@ -1,7 +1,6 @@
 package me.tizo.textfilter.config;
 
 import lombok.Getter;
-import me.tizo.textfilter.modules.LeetNormalizer;
 import me.tizo.textfilter.utils.Webhook;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.Plugin;
