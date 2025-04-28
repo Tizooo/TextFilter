@@ -6,6 +6,7 @@ import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
+import java.util.Scanner;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -56,26 +57,28 @@ public class ExpandedRegexCheck {
 
             // Expand specific letters to characters that look like them
             if (ch == 'i' || ch == 'l') {
-                result.append("[il1!|\\W\\s]");
+                result.append("[il1!|_\\W\\s]");
             } else if (ch == 'c') {
-                result.append("[c<({\\[\\W\\s]");
+                result.append("[c<({\\[_\\W\\s]");
             } else {
                 result.append(ch);
             }
 
-            // After expanded char, if not regex operator, add +(\W|\s)*
-            if (!isRegexOperator(ch)) {
-                result.append('+');
-                result.append("(\\W|\\s)*");
+            if (Character.isLetter(ch)) {
+                if (i + 1 < input.length()) { // Ensure we're not going out of bounds
+                    char nextChar = input.charAt(i + 1);
+                    if (nextChar == '+' || nextChar == '*') {
+                        result.append(nextChar).append("(_|\\W|\\s)*");
+                        i++;
+                    } else {
+                        result.append("+(_|\\W|\\s)*");
+                    }
+                } else {
+                    result.append("+(_|\\W|\\s)*"); // Handle the last character
+                }
             }
         }
-
         return result.toString();
-    }
-
-    //TODO: instead just check if its a letter or not
-    private static boolean isRegexOperator(char ch) {
-        return ch == '^' || ch == '+' || ch == '*' || ch == '|' || ch == '?' || ch == ')' || ch == '(' || ch == '[' || ch == ']';
     }
 
     public static boolean regexCheck(String text) {
@@ -85,5 +88,37 @@ public class ExpandedRegexCheck {
             }
         }
         return false;
+    }
+
+    // For quick code testing
+    public static void main(String[] args) {
+        // Create a scanner to read input from the terminal
+        Scanner scanner = new Scanner(System.in);
+
+        // Infinite loop to keep the program running
+        while (true) {
+            // Ask for user input
+            System.out.print("Enter text to check (or 'exit' to quit): ");
+            String inputText = scanner.nextLine();
+
+            // Check if the user wants to exit
+            if (inputText.equalsIgnoreCase("exit")) {
+                System.out.println("Exiting program...");
+                break; // Exit the loop
+            }
+
+            // Perform the regex check
+            boolean containsBadWords = regexCheck(inputText);
+
+            // Output the result
+            if (containsBadWords) {
+                System.out.println("The input contains bad words.");
+            } else {
+                System.out.println("The input does not contain bad words.");
+            }
+        }
+
+        // Close the scanner resource
+        scanner.close();
     }
 }
