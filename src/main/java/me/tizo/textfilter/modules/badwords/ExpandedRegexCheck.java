@@ -57,9 +57,9 @@ public class ExpandedRegexCheck {
 
             // Expand specific letters to characters that look like them
             if (ch == 'i' || ch == 'l') {
-                result.append("[il1!|_\\W\\s]");
+                result.append("[il1!|]");
             } else if (ch == 'c') {
-                result.append("[c<({\\[_\\W\\s]");
+                result.append("[c<({\\[]");
             } else {
                 result.append(ch);
             }
